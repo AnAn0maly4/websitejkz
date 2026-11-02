@@ -1,0 +1,394 @@
+            <!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DompetKecil - Pencatat Keuangan Minimalis</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        header p {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* Kartu Saldo */
+        .balance-card {
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            color: white;
+            padding: 24px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+        }
+
+        .balance-card h3 {
+            font-size: 14px;
+            font-weight: 400;
+            opacity: 0.9;
+        }
+
+        .balance-card h2 {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 8px 0 16px 0;
+        }
+
+        .income-expense-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            padding-top: 12px;
+        }
+
+        .ie-item span {
+            font-size: 12px;
+            opacity: 0.9;
+            display: block;
+        }
+
+        .ie-item h4 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        /* Card Container Umum */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        /* Form Styling */
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--text-muted);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+        }
+
+        button.btn-primary {
+            width: 100%;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button.btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* Riwayat Transaksi */
+        .transaction-list {
+            list-style: none;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+
+        .trx-info h4 {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .trx-info small {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .trx-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .trx-amount {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .trx-amount.income {
+            color: var(--success);
+        }
+
+        .trx-amount.expense {
+            color: var(--danger);
+        }
+
+        .btn-delete {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 16px;
+            transition: color 0.2s;
+        }
+
+        .btn-delete:hover {
+            color: var(--danger);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 13px;
+            padding: 15px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>DompetKecil</h1>
+            <p>Kelola keuangan harian dengan mudah & aman di browser</p>
+        </header>
+
+        <!-- Kartu Ringkasan -->
+        <div class="balance-card">
+            <h3>Total Saldo Anda</h3>
+            <h2 id="total-balance">Rp 0</h2>
+            <div class="income-expense-grid">
+                <div class="ie-item">
+                    <span>Pemasukan</span>
+                    <h4 id="total-income">Rp 0</h4>
+                </div>
+                <div class="ie-item">
+                    <span>Pengeluaran</span>
+                    <h4 id="total-expense">Rp 0</h4>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Tambah Transaksi -->
+        <div class="card">
+            <h3>Tambah Transaksi Baru</h3>
+            <form id="transaction-form">
+                <div class="form-group">
+                    <label for="description">Keterangan</label>
+                    <input type="text" id="description" placeholder="Contoh: Gaji bulanan, Makan siang..." required>
+                </div>
+                <div class="form-group">
+                    <label for="amount">Jumlah (Rp)</label>
+                    <input type="number" id="amount" placeholder="Contoh: 50000" required min="1">
+                </div>
+                <div class="form-group">
+                    <label for="type">Jenis Transaksi</label>
+                    <select id="type">
+                        <option value="income">Pemasukan (+)</option>
+                        <option value="expense">Pengeluaran (-)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary">Simpan Transaksi</button>
+            </form>
+        </div>
+
+        <!-- Riwayat Transaksi -->
+        <div class="card">
+            <h3>Riwayat Transaksi</h3>
+            <ul id="transaction-list" class="transaction-list">
+                <!-- Data akan dimasukkan lewat Javascript -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Mengambil data dari LocalStorage atau membuat array kosong
+        let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+
+        const form = document.getElementById('transaction-form');
+        const descriptionInput = document.getElementById('description');
+        const amountInput = document.getElementById('amount');
+        const typeInput = document.getElementById('type');
+        
+        const balanceEl = document.getElementById('total-balance');
+        const incomeEl = document.getElementById('total-income');
+        const expenseEl = document.getElementById('total-expense');
+        const listEl = document.getElementById('transaction-list');
+
+        // Fungsi format mata uang Rupiah
+        function formatRupiah(number) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
+        }
+
+        // Fungsi memperbarui UI dan LocalStorage
+        function updateApp() {
+            listEl.innerHTML = '';
+            
+            let totalIncome = 0;
+            let totalExpense = 0;
+
+            if (transactions.length === 0) {
+                listEl.innerHTML = '<li class="empty-state">Belum ada transaksi tercatat.</li>';
+            }
+
+            transactions.forEach((trx, index) => {
+                const amountVal = Number(trx.amount);
+                if (trx.type === 'income') {
+                    totalIncome += amountVal;
+                } else {
+                    totalExpense += amountVal;
+                }
+
+                // Render item ke list
+                const li = document.createElement('li');
+                li.classList.add('transaction-item');
+                li.innerHTML = `
+                    <div class="trx-info">
+                        <h4>${trx.description}</h4>
+                        <small>${trx.date}</small>
+                    </div>
+                    <div class="trx-right">
+                        <span class="trx-amount ${trx.type}">
+                            ${trx.type === 'income' ? '+' : '-'} ${formatRupiah(amountVal)}
+                        </span>
+                        <button class="btn-delete" onclick="deleteTransaction(${index})">&times;</button>
+                    </div>
+                `;
+                listEl.appendChild(li);
+            });
+
+            const totalBalance = totalIncome - totalExpense;
+
+            balanceEl.innerText = formatRupiah(totalBalance);
+            incomeEl.innerText = formatRupiah(totalIncome);
+            expenseEl.innerText = formatRupiah(totalExpense);
+
+            // Simpan ke LocalStorage browser
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+        }
+
+        // Fungsi Menambah Transaksi
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const description = descriptionInput.value.trim();
+            const amount = parseFloat(amountInput.value);
+            const type = typeInput.value;
+
+            if (!description || isNaN(amount) || amount <= 0) return;
+
+            const currentDate = new Date().toLocaleDateString('id-ID', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            const newTransaction = {
+                description,
+                amount,
+                type,
+                date: currentDate
+            };
+
+            transactions.unshift(newTransaction); // Tambah ke urutan paling atas
+            updateApp();
+
+            // Reset form
+            descriptionInput.value = '';
+            amountInput.value = '';
+            descriptionInput.focus();
+        });
+
+        // Fungsi Hapus Transaksi
+        function deleteTransaction(index) {
+            transactions.splice(index, 1);
+            updateApp();
+        }
+
+        // Jalankan saat pertama kali halaman dimuat
+        updateApp();
+    </script>
+</body>
+</html>.;'''''''''''''''''''''''''''''''''             
